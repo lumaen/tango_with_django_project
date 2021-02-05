@@ -1,5 +1,5 @@
 from django.contrib import admin
-from rango.models import Category, Page
+from rango.models import Category, Page, UserProfile
 
 # Change the Page visualisation in the Admin page
 class PageAdmin(admin.ModelAdmin):
@@ -12,3 +12,4 @@ class CategoryAdmin(admin.ModelAdmin):
 # Registered models
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Page, PageAdmin)
+admin.site.register(UserProfile)

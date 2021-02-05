@@ -1,7 +1,8 @@
 # Classes to represent forms
 
 from django import forms
-from rango.models import Page, Category
+from rango.models import Page, Category, UserProfile
+from django.contrib.auth.models import User
 
 # Form for gathering data about Category
 class CategoryForm(forms.ModelForm):
@@ -24,7 +25,6 @@ class PageForm(forms.ModelForm):
                             help_text='Please enter the URL of the page.')
     views = forms.IntegerField(widget=forms.HiddenInput(), initial=0)
 
-
     # Class to provide additional information about the form
     class Meta:
         # Provide association between this form and ModelForm
@@ -45,3 +45,19 @@ class PageForm(forms.ModelForm):
             cleaned_data['url'] = url
 
         return cleaned_data
+
+# Form for authenticating Users
+class UserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+
+    # Class to provide additional information about the form
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', )
+
+# Form for authenticating Users
+class UserProfileForm(forms.ModelForm):
+    # Class to provide additional information about the form
+    class Meta:
+        model = UserProfile
+        fields = ('website', 'picture', )
