@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from rango.models import Category, Page
-from rango.forms import CategoryForm, PageForm, UserForm, UserProfileForm
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from rango.models import Category, Page
+from rango.forms import CategoryForm, PageForm, UserForm, UserProfileForm
+from datetime import datetime
 
 def index(request):
     # List of the Categories
@@ -17,13 +18,20 @@ def index(request):
     context_dict['categories'] = category_list
     context_dict['pages'] = pages_list
 
-    # Return a rendered response
+    # Handle the cookie with helper function
+    visitor_cookie_handler(request)
+
+    # Return the response with cookies updated
     return render(request, 'rango/index.html', context=context_dict)
 
 
 def about(request):
+    # Handle the cookie with helper function
+    visitor_cookie_handler(request)
+    context_dict = {'visits': request.session['visits']}
+
     # Return a rendered response
-    return render(request, 'rango/about.html')
+    return render(request, 'rango/about.html', context=context_dict)
 
 
 def show_category(request, category_name_slug):
@@ -200,3 +208,30 @@ def user_logout(request):
 @login_required
 def restricted(request):
     return render(request, 'rango/restricted.html')
+
+
+# Helper function to visitor_cookie_handler
+def get_server_side_cookie(request, cookie, default_val=None):
+    val = request.session.get(cookie)
+    if not val:
+        val = default_val
+    return val
+
+# Helper function to keep track of cookies
+def visitor_cookie_handler(request):
+    # Get the number of visits to the site
+    visits = int(get_server_side_cookie(request, 'visits', '1'))
+
+    last_visit_cookie = get_server_side_cookie(request, 'last_visit', str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7], '%Y-%m-%d %H:%M:%S')
+
+    # "More than a day" case
+    if (datetime.now() - last_visit_time).days > 0:
+        visits += 1
+        request.session['last_visit'] = str(datetime.now())
+    # "Less than a day" case
+    else:
+        request.session['last_visit'] = last_visit_cookie
+
+    # Update/Set the visits cookie
+    request.session['visits'] = visits
